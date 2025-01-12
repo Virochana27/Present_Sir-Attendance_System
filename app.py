@@ -73,6 +73,10 @@ def faculty():
                 'faculty.html',
                 qr_code=qr_code_base64,
                 session_id=session_id,
+                subject=subject,
+                faculty_id=faculty_id,
+                faculty_name=faculty_name,
+                room_number=room_number,
                 start_time=start_time,
                 end_time=end_time,
                 date=date
@@ -88,6 +92,42 @@ def faculty():
             return redirect(url_for('faculty'))  # Redirect to the same page to display the message
 
     return render_template('faculty.html', message=message)
+
+@app.route('/generate_qr', methods=['POST'])
+def generate_qr():
+    try:
+        # Retrieve form data from the request
+        data = request.json
+        session_id = data.get('session_id')
+        subject = data.get('subject')
+        faculty_id = data.get('faculty_id')
+        faculty_name = data.get('faculty_name')
+        room_number = data.get('room_number')
+        date = data.get('date')
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+
+        # Generate a new timestamp
+        current_time = datetime.now()
+        timestamp_number = int(current_time.timestamp())
+
+        # Generate new QR code content
+        qr_content = (
+            f"{session_id}|{subject}|{faculty_id}|{faculty_name}|"
+            f"{room_number}|{date}|{start_time}|{end_time}|{timestamp_number}"
+        )
+
+        # Create the QR code
+        qr_img = qrcode.make(qr_content)
+        buffer = io.BytesIO()
+        qr_img.save(buffer, format="PNG")
+        buffer.seek(0)
+        qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+        return jsonify({'qr_code': qr_code_base64, 'timestamp': timestamp_number})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 
 # Student page to scan QR code and mark attendance
 @app.route('/student', methods=['GET', 'POST'])

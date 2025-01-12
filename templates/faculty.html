@@ -65,25 +65,21 @@
             justify-content: center;
             align-items: center;
             height: 100%;
+            flex-direction: column;
         }
         img {
             max-width: 100%;
             height: auto;
         }
-
-        /* Ensure both columns take equal width */
         .row {
             display: flex;
             justify-content: space-between;
         }
-
         .col-md-6 {
             flex: 1;
         }
-
-        /* Responsive grid */
         @media (max-width: 768px) {
-            .alert{
+            .alert {
                 margin-left: 10%;
             }
             .form-container {
@@ -104,7 +100,6 @@
 <body>
     <div class="container">
         <div class="row">
-            <!-- Form Container -->
             <div class="col-md-6 col-12 form-container">
                 <h1>Generate QR Code for Attendance</h1>
                 <form method="POST">
@@ -140,20 +135,16 @@
                         <label for="end_time">End Time:</label>
                         <input type="time" name="end_time" id="end_time" required>
                     </div>
-
                     <button type="submit">Generate QR Code</button>
                 </form>
             </div>
-
-            <!-- QR Code or Error Message Container -->
             <div class="col-md-6 col-12">
                 {% if qr_code %}
                 <div class="qr-container">
-                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+                    <img id="qr-code-image" src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+                    <p id="countdown-timer" style="font-weight: bold; font-size: 18px; color: #333;"></p>
                 </div>
                 {% endif %}
-
-                <!-- Display message -->
                 {% if message %}
                 <div class="alert" role="alert">
                     {{ message }}
@@ -163,7 +154,65 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0wF+zpE2Rx2Di1ni+DZggsgJEdc8yAd4d+dpSQ5wyV5YJjf3" crossorigin="anonymous"></script>
+    <script>
+        let intervalId;
+        let countdownInterval;
+
+        function fetchQRCode() {
+            const formData = {
+                session_id: "{{ session_id }}",
+                subject: "{{ subject }}",
+                faculty_id: "{{ faculty_id }}",
+                faculty_name: "{{ faculty_name }}",
+                room_number: "{{ room_number }}",
+                date: "{{ date }}",
+                start_time: "{{ start_time }}",
+                end_time: "{{ end_time }}"
+            };
+
+            fetch('/generate_qr', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.qr_code) {
+                    document.getElementById('qr-code-image').src = `data:image/png;base64,${data.qr_code}`;
+                    resetCountdown();
+                }
+            })
+            .catch(err => console.error('Error fetching QR code:', err));
+        }
+
+        function startCountdown() {
+            let remainingTime = 30;
+            document.getElementById('countdown-timer').textContent = `QR code resets in: ${remainingTime}s`;
+
+            countdownInterval = setInterval(() => {
+                remainingTime--;
+                document.getElementById('countdown-timer').textContent = `QR code resets in: ${remainingTime}s`;
+                if (remainingTime <= 0) clearInterval(countdownInterval);
+            }, 1000);
+        }
+
+        function resetCountdown() {
+            clearInterval(countdownInterval);
+            startCountdown();
+        }
+
+        window.onload = () => {
+            fetchQRCode();
+            intervalId = setInterval(fetchQRCode, 30000);
+            startCountdown();
+        };
+
+        window.onbeforeunload = () => {
+            clearInterval(intervalId);
+            clearInterval(countdownInterval);
+        };
+    </script>
 </body>
 </html>
