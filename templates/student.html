@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            position: relative;
+            width: 300px; /* Set a specific width for the scanner container */
+            margin: 0 auto;
+            border: 2px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%; /* Make the video take up the full width of the container */
+            height: auto;
+            border-radius: 8px;
+        }
+
+        #qr_data {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .switch-btn {
+            background-color: #007BFF;
+            margin-top: 15px;
+        }
+
+        .switch-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan QR Code to Mark Attendance</h1>
+
+    <div class="scanner-container">
+        <!-- Video element for scanning QR code -->
+        <video id="video" autoplay></video>
+    </div>
+
+    <button class="switch-btn" id="switch-camera">Switch Camera</button>
+
+    <br>
+    <!-- Input field to display scanned QR code -->
+    <input type="text" id="qr_data" placeholder="Scanned QR Code" readonly>
+
+    <br>
+    <!-- Submit form to mark attendance -->
+    <form method="POST" action="/student">
+        <input type="text" id="student_name" name="student_name" placeholder="Enter your Name" required><br>
+        <input type="text" id="usn" name="usn" placeholder="Enter your USN" required><br>
+
+        <!-- Hidden field for QR data -->
+        <input type="hidden" name="qr_data" id="qr_data_hidden">
+
+        <button type="submit">Mark Attendance</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const qrDataInput = document.getElementById('qr_data');
+        const qrDataHidden = document.getElementById('qr_data_hidden');
+        const switchCameraButton = document.getElementById('switch-camera');
+
+        let currentStream = null;
+        let currentCameraIndex = 0;
+        let availableDevices = [];
+
+        // Start video stream
+        async function startStream(deviceId) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : true
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                video.setAttribute("playsinline", true); // Required for iOS devices
+                video.play();
+            } catch (err) {
+                console.error("Error accessing camera: ", err);
+            }
+        }
+
+        // Function to get all video input devices
+        async function getAvailableCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            availableDevices = devices.filter(device => device.kind === 'videoinput');
+        }
+
+        // Switch between available cameras
+        async function switchCamera() {
+            if (availableDevices.length > 1) {
+                currentCameraIndex = (currentCameraIndex + 1) % availableDevices.length;
+                const selectedDeviceId = availableDevices[currentCameraIndex].deviceId;
+                await startStream(selectedDeviceId);
+            } else {
+                alert('No multiple cameras found!');
+            }
+        }
+
+        // Scan QR code from the video stream
+        function scanQRCode() {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+
+            // Set canvas dimensions to video dimensions
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+
+            // Draw video frame on the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Decode the image on the canvas to check for QR code
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (code) {
+                // If QR code is detected, update the text and hidden field
+                qrDataInput.value = code.data;
+                qrDataHidden.value = code.data;
+            }
+        }
+
+        // Initialize the application
+        async function init() {
+            await getAvailableCameras();
+            if (availableDevices.length > 0) {
+                startStream(availableDevices[currentCameraIndex].deviceId);
+            } else {
+                alert("No cameras found!");
+            }
+
+            setInterval(scanQRCode, 100);
+        }
+
+        // Event listener for switching cameras
+        switchCameraButton.addEventListener('click', switchCamera);
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
+ 

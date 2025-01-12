@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty - Generate QR Code</title>
+</head>
+<body>
+    <h1>Generate QR Code for Attendance</h1>
+    <form method="POST">
+        <label>Session ID:</label>
+        <input type="text" name="session_id" required><br>
+        <label>Subject:</label>
+        <input type="text" name="subject" required><br>
+        <label>Faculty ID:</label>
+        <input type="text" name="faculty_id" required><br>
+        <label>Faculty Name:</label>
+        <input type="text" name="faculty_name" required><br>
+        <label>Room Number:</label>
+        <input type="text" name="room_number" required><br>
+        <label>Date:</label>
+        <input type="date" name="date" required><br>
+        <label>Start Time:</label>
+        <input type="time" name="start_time" required><br>
+        <label>End Time:</label>
+        <input type="time" name="end_time" required><br>
+        <button type="submit">Generate QR Code</button>
+    </form>
+
+    {% if qr_code %}
+        <h2>Generated QR Code:</h2>
+        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+    {% endif %}
+</body>
+</html>

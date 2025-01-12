@@ -1,25 +1,21 @@
 import sqlite3
 
-# Initialize the SQLite database
-def init_db():
-    conn = sqlite3.connect('attendance.db')
-    cursor = conn.cursor()
+# Connect to the SQLite database
+connection = sqlite3.connect('attendance.db')
 
-    # Create the attendance table if it doesn't already exist
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS attendance (
-            usn TEXT PRIMARY KEY,  -- Use USN as primary key
-            student_name TEXT,
-            subject TEXT,
-            faculty_name TEXT,
-            date TEXT,
-            time TEXT
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
-    print("Database initialized successfully.")
+# Create a cursor object to interact with the database
+cursor = connection.cursor()
 
-# Call the function to initialize the database
-init_db()
+# Execute a query to fetch data from the table
+cursor.execute("SELECT * FROM sessions")
+
+# Fetch all the rows from the query result
+rows = cursor.fetchall()
+# Print the fetched data
+for row in rows:
+    print(row)
+
+
+
+# Close the connection
+connection.close()
