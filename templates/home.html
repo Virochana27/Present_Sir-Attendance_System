@@ -3,11 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance System</title>
+    <title>Present Sir - Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+    /* Global Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        color: #FFFFFF;
+        background: linear-gradient(to bottom right, #333333, #555555);
+        overflow: hidden;
+    }
+
+    /* Hero Section */
+    .hero {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to bottom right, #333333, #555555);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        display: flex;
+        width: 90%;
+        height: 80%;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        position: relative;
+        margin-top: 80px;
+        flex-direction: row; /* Default to side-by-side layout */
+    }
+
+    .section {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        padding: 40px;
+        text-align: center;
+        transition: filter 0.5s ease, transform 0.3s ease;
+        flex-direction: column;
+    }
+
+    .student {
+        background: #333333;
+    }
+
+    .faculty {
+        background: #333333;
+    }
+
+    .section h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .section p {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+
+    .section button {
+        padding: 12px 30px;
+        background-color: #484848;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .section button:hover {
+        background-color: #cdcdcd;
+        color: rgb(0, 0, 0);
+    }
+
+    .section:hover {
+        filter: brightness(1.5);
+        transform: scale(1.05);
+    }
+
+    /* Dim other sections when hovered */
+    .section:not(:hover) {
+        filter: brightness(0.7);
+    }
+
+    /* Navigation Bar */
+    nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .logo:hover {
+        color: #ffa200;
+    }
+
+    /* Footer */
+    footer {
+        position: absolute;
+        bottom: 1px;
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-size: 1rem;
+    }
+
+    footer a {
+        color: #F1F1F1;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* Media Queries for Responsive Layout */
+    @media (max-width: 768px) {
+        /* Adjust layout for mobile */
+        body {
+            overflow: auto;
+        }
+
+        .hero-content {
+            flex-direction: column; /* Stacks the sections vertically */
+            margin-top: 20px; /* Reduce top margin for better spacing */
+        }
+
+        /* Scale down the font sizes for mobile */
+        .section h1 {
+            font-size: 2rem; /* Reduced from 2.5rem */
+        }
+
+        .section p {
+            font-size: 1rem; /* Reduced from 1.2rem */
+        }
+
+        .section button {
+            padding: 10px 20px; /* Smaller padding for mobile */
+            font-size: 1rem; /* Reduced button text size */
+        }
+
+        /* Reduce padding in sections */
+        .section {
+            padding: 20px;
+        }
+
+        /* Adjust navigation logo font size */
+        .logo {
+            font-size: 1.2rem; /* Slightly smaller logo font for mobile */
+        }
+
+        footer {
+            bottom: 1px;
+            position: relative;
+        }
+    }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Attendance System</h1>
-    <p><a href="/faculty">Go to Faculty Page</a></p>
-    <p><a href="/student">Go to Student Page</a></p>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo" onclick="location.href='#'">Present Sir</div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <!-- Student Section -->
+            <div class="section student">
+                <div>
+                    <h1>I am a Student!</h1>
+                    <p>Rolling through to make sure my attendance is in place and I’m ready to crush it like always</p>
+                    <button onclick="location.href='/student'">Continue</button>
+                </div>
+            </div>
+
+            <!-- Faculty Section -->
+            <div class="section faculty">
+                <div>
+                    <h1>I am a Faculty!</h1>
+                    <p>Running through a quick attendance check to keep things smooth and synchronized</p>
+                    <button onclick="location.href='/faculty'">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Built with ❤️ by <a href="#">Your Team</a>
+    </footer>
 </body>
+<script>
+    // Get the student and faculty sections
+    const studentSection = document.querySelector('.student');
+    const facultySection = document.querySelector('.faculty');
+
+    // Add hover event listeners
+    studentSection.addEventListener('mouseenter', () => {
+        facultySection.style.filter = 'brightness(0.1)';
+    });
+
+    studentSection.addEventListener('mouseleave', () => {
+        facultySection.style.filter = 'brightness(1)';
+    });
+
+    facultySection.addEventListener('mouseenter', () => {
+        studentSection.style.filter = 'brightness(0.1)';
+    });
+
+    facultySection.addEventListener('mouseleave', () => {
+        studentSection.style.filter = 'brightness(1)';
+    });
+</script>
+
 </html>
