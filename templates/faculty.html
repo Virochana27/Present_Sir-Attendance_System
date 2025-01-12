@@ -4,32 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty - Generate QR Code</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJpP4f9C8EdU3L6wd8J6bW9X0tU9czwXz94Xc4+6xS2sFbsb7U6Y9cQ1Dhp0" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            border-radius: 5px;
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .alert {
+            margin-left: 20%;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+        }
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Ensure both columns take equal width */
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .col-md-6 {
+            flex: 1;
+        }
+
+        /* Responsive grid */
+        @media (max-width: 768px) {
+            .alert{
+                margin-left: 10%;
+            }
+            .form-container {
+                padding: 10%;
+            }
+            .qr-container {
+                margin-top: 10%;
+            }
+            .row {
+                flex-direction: column;
+            }
+            .col-md-6 {
+                margin-bottom: 10%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Generate QR Code for Attendance</h1>
-    <form method="POST">
-        <label>Session ID:</label>
-        <input type="text" name="session_id" required><br>
-        <label>Subject:</label>
-        <input type="text" name="subject" required><br>
-        <label>Faculty ID:</label>
-        <input type="text" name="faculty_id" required><br>
-        <label>Faculty Name:</label>
-        <input type="text" name="faculty_name" required><br>
-        <label>Room Number:</label>
-        <input type="text" name="room_number" required><br>
-        <label>Date:</label>
-        <input type="date" name="date" required><br>
-        <label>Start Time:</label>
-        <input type="time" name="start_time" required><br>
-        <label>End Time:</label>
-        <input type="time" name="end_time" required><br>
-        <button type="submit">Generate QR Code</button>
-    </form>
+    <div class="container">
+        <div class="row">
+            <!-- Form Container -->
+            <div class="col-md-6 col-12 form-container">
+                <h1>Generate QR Code for Attendance</h1>
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="session_id">Session ID:</label>
+                        <input type="text" name="session_id" id="session_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject:</label>
+                        <input type="text" name="subject" id="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="faculty_id">Faculty ID:</label>
+                        <input type="text" name="faculty_id" id="faculty_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="faculty_name">Faculty Name:</label>
+                        <input type="text" name="faculty_name" id="faculty_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="room_number">Room Number:</label>
+                        <input type="text" name="room_number" id="room_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" name="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="start_time">Start Time:</label>
+                        <input type="time" name="start_time" id="start_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_time">End Time:</label>
+                        <input type="time" name="end_time" id="end_time" required>
+                    </div>
 
-    {% if qr_code %}
-        <h2>Generated QR Code:</h2>
-        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
-    {% endif %}
+                    <button type="submit">Generate QR Code</button>
+                </form>
+            </div>
+
+            <!-- QR Code or Error Message Container -->
+            <div class="col-md-6 col-12">
+                {% if qr_code %}
+                <div class="qr-container">
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+                </div>
+                {% endif %}
+
+                <!-- Display message -->
+                {% if message %}
+                <div class="alert" role="alert">
+                    {{ message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0wF+zpE2Rx2Di1ni+DZggsgJEdc8yAd4d+dpSQ5wyV5YJjf3" crossorigin="anonymous"></script>
 </body>
 </html>

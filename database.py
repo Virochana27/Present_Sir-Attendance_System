@@ -7,7 +7,7 @@ connection = sqlite3.connect('attendance.db')
 cursor = connection.cursor()
 
 # Execute a query to fetch data from the table
-cursor.execute("SELECT * FROM sessions")
+cursor.execute("SELECT * FROM attendance")
 
 # Fetch all the rows from the query result
 rows = cursor.fetchall()

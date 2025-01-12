@@ -11,9 +11,26 @@
             padding: 20px;
         }
 
+        .message {
+            padding: 10px;
+            margin: 0px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .message.error {
+            background-color: #f44336;
+            color: white;
+        }
+
         .scanner-container {
             position: relative;
-            width: 300px; /* Set a specific width for the scanner container */
+            width: 300px;
             margin: 0 auto;
             border: 2px solid #ccc;
             padding: 10px;
@@ -22,7 +39,7 @@
         }
 
         video {
-            width: 100%; /* Make the video take up the full width of the container */
+            width: 100%;
             height: auto;
             border-radius: 8px;
         }
@@ -71,40 +88,57 @@
         .switch-btn:hover {
             background-color: #0056b3;
         }
+
+        .scan-again-btn {
+            background-color: #FFC107;
+            margin-top: 15px;
+        }
+
+        .scan-again-btn:hover {
+            background-color: #e0a800;
+        }
+
+        #switch-camera, .scanner-container {
+            display: none; /* Hide switch button and container when camera is off */
+        }
     </style>
 </head>
 <body>
     <h1>Scan QR Code to Mark Attendance</h1>
 
     <div class="scanner-container">
-        <!-- Video element for scanning QR code -->
         <video id="video" autoplay></video>
     </div>
 
     <button class="switch-btn" id="switch-camera">Switch Camera</button>
+    <button class="scan-again-btn" id="scan-again" style="display: none;">Scan Again</button>
 
     <br>
-    <!-- Input field to display scanned QR code -->
     <input type="text" id="qr_data" placeholder="Scanned QR Code" readonly>
 
     <br>
-    <!-- Submit form to mark attendance -->
     <form method="POST" action="/student">
         <input type="text" id="student_name" name="student_name" placeholder="Enter your Name" required><br>
         <input type="text" id="usn" name="usn" placeholder="Enter your USN" required><br>
 
-        <!-- Hidden field for QR data -->
         <input type="hidden" name="qr_data" id="qr_data_hidden">
 
         <button type="submit">Mark Attendance</button>
     </form>
-
+    <br>
+    {% if message %}
+        <div class="message {{ message_type }}">
+            {{ message }}
+        </div>
+    {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
         const video = document.getElementById('video');
         const qrDataInput = document.getElementById('qr_data');
         const qrDataHidden = document.getElementById('qr_data_hidden');
         const switchCameraButton = document.getElementById('switch-camera');
+        const scanAgainButton = document.getElementById('scan-again');
+        const scannerContainer = document.querySelector('.scanner-container');
 
         let currentStream = null;
         let currentCameraIndex = 0;
@@ -125,6 +159,17 @@
                 video.srcObject = currentStream;
                 video.setAttribute("playsinline", true); // Required for iOS devices
                 video.play();
+
+                // Apply mirroring logic if it's the front camera
+                if (deviceId && availableDevices[currentCameraIndex].label.toLowerCase().includes("front")) {
+                    video.style.transform = "scaleX(-1)";  // Mirror front camera video
+                } else {
+                    video.style.transform = "none";  // Reset for back camera
+                }
+
+                // Show the switch camera button and scanner container
+                switchCameraButton.style.display = "inline-block";
+                scannerContainer.style.display = "block";
             } catch (err) {
                 console.error("Error accessing camera: ", err);
             }
@@ -152,28 +197,38 @@
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("2d");
 
-            // Set canvas dimensions to video dimensions
             canvas.height = video.videoHeight;
             canvas.width = video.videoWidth;
 
-            // Draw video frame on the canvas
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Decode the image on the canvas to check for QR code
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             const code = jsQR(imageData.data, canvas.width, canvas.height);
 
             if (code) {
-                // If QR code is detected, update the text and hidden field
                 qrDataInput.value = code.data;
                 qrDataHidden.value = code.data;
+
+                // Stop the camera after scanning
+                currentStream.getTracks().forEach(track => track.stop());
+                video.style.display = "none"; // Hide the video feed
+                scanAgainButton.style.display = "inline-block"; // Show the "Scan Again" button
+
+                // Hide the switch camera button and scanner container
+                switchCameraButton.style.display = "none";
+                scannerContainer.style.display = "none";
             }
         }
 
         // Initialize the application
         async function init() {
             await getAvailableCameras();
+
             if (availableDevices.length > 0) {
+                const backCamera = availableDevices.find(device => device.label.toLowerCase().includes("back"));
+                if (backCamera) {
+                    currentCameraIndex = availableDevices.indexOf(backCamera);
+                }
                 startStream(availableDevices[currentCameraIndex].deviceId);
             } else {
                 alert("No cameras found!");
@@ -182,12 +237,19 @@
             setInterval(scanQRCode, 100);
         }
 
-        // Event listener for switching cameras
-        switchCameraButton.addEventListener('click', switchCamera);
+        // Start scanning again
+        function scanAgain() {
+            video.style.display = "block"; // Show the video feed
+            scanAgainButton.style.display = "none"; // Hide the "Scan Again" button
+            switchCameraButton.style.display = "inline-block"; // Show the switch camera button
+            scannerContainer.style.display = "block"; // Show the scanner container
+            startStream(availableDevices[currentCameraIndex].deviceId); // Restart the camera stream
+        }
 
-        // Start the application
+        switchCameraButton.addEventListener('click', switchCamera);
+        scanAgainButton.addEventListener('click', scanAgain);
+
         init();
     </script>
 </body>
 </html>
- 
