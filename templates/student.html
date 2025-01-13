@@ -14,13 +14,14 @@
             font-family: 'Poppins', sans-serif;
             color: #FFFFFF;
             background: linear-gradient(to bottom right, #333333, #555555);
-            min-height: 100vh;
+            min-height: 105vh;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
         .container {
+            margin: 50px 0;
             width: 90%;
             max-width: 800px;
             background:  #333333;
@@ -28,7 +29,6 @@
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
             text-align: center;
-            animation: fadeIn 1s ease-in-out;
         }
         @keyframes fadeIn {
             from {
@@ -70,9 +70,6 @@
             font-size: 1rem;
             text-align: center;
         }
-        form {
-            margin-top: 20px;
-        }
         input[type="text"] {
             width: 90%;
             max-width: 300px;
@@ -91,7 +88,7 @@
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px;
             transition: all 0.3s ease;
         }
         button:hover {
@@ -124,10 +121,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
+        font-size: 1.5rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
         .logo:hover {
             color: #ffa200;
         }
@@ -139,12 +137,26 @@
             font-weight: bold;
         }
         .message.success {
-            background-color: #4CAF50;
-            color: white;
+            position: absolute;
+            top: 65px;  /* Just below the nav */
+            right: 20px;
+            padding: 15px;
+            background-color: #d7f8dc;
+            color: #1c723a;
+            border: 1px solid #c6f5d8;
+            border-radius: 8px;
+            opacity:calc(0.9);
         }
         .message.error {
-            background-color: #f44336;
-            color: white;
+            position: absolute;
+            top: 65px;  /* Just below the nav */
+            right: 20px;
+            padding: 15px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            opacity:calc(0.9);
         }
         @media (max-width: 768px) {
             .logo {
@@ -153,6 +165,9 @@
             h1 {
                 font-size: 1.5rem;
             }
+            .message.success {
+                position: relative;
+            }
         }
     </style>
 </head>
@@ -160,6 +175,11 @@
     <nav>
         <div class="logo" onclick="location.href='/'">Present Sir</div>
     </nav>
+    {% if message %}
+    <div id="server-message" class="message {{ message_type }}">
+        {{ message }}
+    </div>
+{% endif %}
     <div class="container">
         <h1>Scan QR Code to Mark Attendance</h1>
         <div class="scanner-container">
@@ -174,11 +194,6 @@
             <input type="hidden" name="qr_data" id="qr_data_hidden">
             <button type="submit">Mark Attendance</button>
         </form>
-        {% if message %}
-            <div class="message {{ message_type }}">
-                {{ message }}
-            </div>
-        {% endif %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
@@ -288,6 +303,8 @@
 
             setInterval(scanQRCode, 100);
         }
+        
+
 
         // Start scanning again
         function scanAgain() {
@@ -297,6 +314,20 @@
             scannerContainer.style.display = "block"; // Show the scanner container
             startStream(availableDevices[currentCameraIndex].deviceId); // Restart the camera stream
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+        const messageBox = document.getElementById("server-message");
+        if (messageBox) {
+            // Fade out and remove after 10 seconds
+            setTimeout(() => {
+                messageBox.style.transition = 'opacity 2s';
+                messageBox.style.opacity = 0;
+                setTimeout(() => {
+                    messageBox.remove();
+                }, 2000); // Wait for the fade-out to complete
+            }, 5000);
+        }
+    });
 
         switchCameraButton.addEventListener('click', switchCamera);
         scanAgainButton.addEventListener('click', scanAgain);

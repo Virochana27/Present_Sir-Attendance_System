@@ -72,16 +72,6 @@ def faculty():
             return render_template(
                 'faculty.html',
                 qr_code=qr_code_base64,
-                session_id=session_id,
-                department=department,
-                sem=sem,
-                section=section,
-                faculty_id=faculty_id,
-                subject_code=subject_code,
-                room=room,
-                start_time=start_time,
-                end_time=end_time,
-                date=date,
             )
 
         except sqlite3.IntegrityError as e:
@@ -150,7 +140,7 @@ def student():
             # Parse QR code content (2 fields expected: session_id, timestamp)
             qr_parts = qr_data.split('|')
             if len(qr_parts) != 2:
-                message = f"Invalid QR code format. Expected 2 fields."
+                message = f"Invalid QR code format."
                 message_type = 'error'
                 session['message'] = message
                 session['message_type'] = message_type

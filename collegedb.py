@@ -179,8 +179,10 @@ conn.close()
 
 # Commit changes and close the connection
 
-delete_attendance(13, "AI000")
+#delete_attendance(13, "AI000")
+#cursor.execute('''DELETE FROM Sessions''')
 #conn.commit()
+
 conn.close()
 
-print("Data inserted successfully into college.db")
+print("Success")
