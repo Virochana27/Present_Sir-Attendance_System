@@ -14,7 +14,6 @@ def home():
     return render_template('home.html')
 
 # Faculty page to generate QR codes
-# Faculty page to generate QR codes
 @app.route('/faculty', methods=['GET', 'POST'])
 def faculty():
     message = None  # Initialize message variable
@@ -26,37 +25,37 @@ def faculty():
 
     if request.method == 'POST':
         # Retrieve form data
-        session_id = request.form.get('session_id')
-        subject = request.form.get('subject')
+        department = request.form.get('department')
+        sem = request.form.get('sem')
+        section = request.form.get('section')
         faculty_id = request.form.get('faculty_id')
-        faculty_name = request.form.get('faculty_name')
-        room_number = request.form.get('room_number')
-        date = request.form.get('date')
+        subject_code = request.form.get('subject_code')
+        room = request.form.get('room')
+        date = datetime.now().strftime('%Y-%m-%d')
         start_time = request.form.get('start_time')
         end_time = request.form.get('end_time')
 
-        # Generate timestamp for validation (as seconds since epoch)
-        current_time = datetime.now()
-        timestamp_number = int(current_time.timestamp())
-
-        # Generate QR code content with 9 fields
-        qr_content = (
-            f"{session_id}|{subject}|{faculty_id}|{faculty_name}|"
-            f"{room_number}|{date}|{start_time}|{end_time}|{timestamp_number}"
-        )
-
         try:
-            # Insert session data into the sessions table
-            conn = sqlite3.connect('attendance.db', check_same_thread=False, timeout=10)
+            # Connect to the database
+            conn = sqlite3.connect('college.db', check_same_thread=False, timeout=10)
             c = conn.cursor()
+
+            # Fetch the last session_id and increment it
+            c.execute('SELECT MAX(session_id) FROM sessions')
+            last_session_id = c.fetchone()[0]
+            session_id = int(last_session_id) + 1 if last_session_id else 1
+            # Insert session data into the Sessions table
             c.execute('''
-                INSERT INTO sessions (session_id, subject, faculty_id, faculty_name, 
-                                      room_number, date, start_time, end_time) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
-                (session_id, subject, faculty_id, faculty_name, room_number, 
-                 date, start_time, end_time))
-            conn.commit()  # Make sure changes are saved to the database
-            
+                INSERT INTO sessions (session_id, department, sem, section, faculty_id, subject_code, room, date, start_time, end_time) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                (session_id, department, sem, section, faculty_id, subject_code, room, date, start_time, end_time))
+            conn.commit()
+
+            # Generate timestamp for validation (as seconds since epoch)
+            current_time = datetime.now()
+            timestamp_number = int(current_time.timestamp())
+            # Generate QR code content with session_id and timestamp
+            qr_content = f"{session_id}|{timestamp_number}"
             # Generate the QR code
             qr_img = qrcode.make(qr_content)
 
@@ -73,10 +72,12 @@ def faculty():
                 'faculty.html',
                 qr_code=qr_code_base64,
                 session_id=session_id,
-                subject=subject,
+                department=department,
+                sem=sem,
+                section=section,
                 faculty_id=faculty_id,
-                faculty_name=faculty_name,
-                room_number=room_number,
+                subject_code=subject_code,
+                room=room,
                 start_time=start_time,
                 end_time=end_time,
                 date=date
@@ -93,28 +94,24 @@ def faculty():
 
     return render_template('faculty.html', message=message)
 
+
 @app.route('/generate_qr', methods=['POST'])
 def generate_qr():
     try:
+        conn = sqlite3.connect('college.db', check_same_thread=False, timeout=10)
+        c = conn.cursor()
+        # Fetch the last session_id and increment it
+        c.execute('SELECT MAX(session_id) FROM sessions')
+        last_session_id = c.fetchone()[0]
+        session_id = int(last_session_id) if last_session_id else 1
         # Retrieve form data from the request
-        data = request.json
-        session_id = data.get('session_id')
-        subject = data.get('subject')
-        faculty_id = data.get('faculty_id')
-        faculty_name = data.get('faculty_name')
-        room_number = data.get('room_number')
-        date = data.get('date')
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
-
         # Generate a new timestamp
         current_time = datetime.now()
         timestamp_number = int(current_time.timestamp())
 
         # Generate new QR code content
         qr_content = (
-            f"{session_id}|{subject}|{faculty_id}|{faculty_name}|"
-            f"{room_number}|{date}|{start_time}|{end_time}|{timestamp_number}"
+            f"{session_id}|{timestamp_number}"
         )
 
         # Create the QR code
@@ -146,49 +143,43 @@ def student():
         student_name = data.get("student_name")
         usn = data.get("usn")
         qr_data = data.get("qr_data")
-        device_id = request.remote_addr  # Use IP address as device ID
         current_time = datetime.now()
-        date = current_time.strftime('%Y-%m-%d')
-        time_str = current_time.strftime('%H:%M:%S')
 
         try:
-            # Parse QR code content (9 fields expected)
+            # Parse QR code content (2 fields expected: session_id, timestamp)
             qr_parts = qr_data.split('|')
-            if len(qr_parts) != 9:
-                message = f"Invalid QR code format. Expected 9 fields."
+            if len(qr_parts) != 2:
+                message = f"Invalid QR code format. Expected 2 fields."
                 message_type = 'error'
-                # Store message in session
                 session['message'] = message
                 session['message_type'] = message_type
                 return redirect(url_for('student'))
 
             # Unpack QR code fields
-            session_id, subject, faculty_id, faculty_name, room_number, qr_date, qr_start_time, qr_end_time, qr_timestamp = qr_parts
+            session_id, qr_timestamp = qr_parts
 
             # Validate timestamp (QR code time vs current time)
             qr_time = datetime.fromtimestamp(int(qr_timestamp))
             time_difference = abs((current_time - qr_time).total_seconds())
-            if time_difference > 1800:  # Allow 30 minutes for validation
+            if time_difference > 30:  # Allow 30 seconds for validation
                 message = "QR code has expired. Please try again."
                 message_type = 'error'
-                # Store message in session
                 session['message'] = message
                 session['message_type'] = message_type
                 return redirect(url_for('student'))
 
             # Mark attendance in the database
-            conn = sqlite3.connect('attendance.db')
+            conn = sqlite3.connect('college.db')
             cursor = conn.cursor()
             cursor.execute(''' 
-                INSERT INTO attendance (usn, session_id, student_name, device_id, date, time)
-                VALUES (?, ?, ?, ?, ?, ?) 
-            ''', (usn, session_id, student_name, device_id, date, time_str))
+                INSERT INTO attendance (session_id, usn, student_name) 
+                VALUES (?, ?, ?) 
+            ''', (session_id, usn, student_name))
             conn.commit()
             conn.close()
 
             message = "Attendance marked successfully!"
             message_type = 'success'
-            # Store message in session
             session['message'] = message
             session['message_type'] = message_type
             return redirect(url_for('student'))

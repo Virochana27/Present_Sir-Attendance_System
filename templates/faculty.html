@@ -184,24 +184,28 @@
                 <h1>Generate QR Code for Attendance</h1>
                 <form method="POST">
                     <div class="form-group">
-                        <label for="session_id">Session ID:</label>
-                        <input type="text" name="session_id" id="session_id" required>
+                        <label for="department">Department:</label>
+                        <input type="text" name="department" id="department" required>
                     </div>
                     <div class="form-group">
-                        <label for="subject">Subject:</label>
-                        <input type="text" name="subject" id="subject" required>
+                        <label for="sem">Semester:</label>
+                        <input type="text" name="sem" id="sem" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="section">Section:</label>
+                        <input type="text" name="section" id="section" required>
                     </div>
                     <div class="form-group">
                         <label for="faculty_id">Faculty ID:</label>
                         <input type="text" name="faculty_id" id="faculty_id" required>
                     </div>
                     <div class="form-group">
-                        <label for="faculty_name">Faculty Name:</label>
-                        <input type="text" name="faculty_name" id="faculty_name" required>
+                        <label for="subject_code">Subject Code:</label>
+                        <input type="text" name="subject_code" id="subject_code" required>
                     </div>
                     <div class="form-group">
-                        <label for="room_number">Room Number:</label>
-                        <input type="text" name="room_number" id="room_number" required>
+                        <label for="room">Room Number:</label>
+                        <input type="text" name="room" id="room" required>
                     </div>
                     <div class="form-group">
                         <label for="date">Date:</label>
@@ -251,11 +255,12 @@
 
         function fetchQRCode() {
             const formData = {
-                session_id: "{{ session_id }}",
-                subject: "{{ subject }}",
+                department: "{{ department }}",
+                sem: "{{ sem }}",
+                section: "{{ section }}",
                 faculty_id: "{{ faculty_id }}",
-                faculty_name: "{{ faculty_name }}",
-                room_number: "{{ room_number }}",
+                subject_code: "{{ subject_code }}",
+                room: "{{ room }}",
                 date: "{{ date }}",
                 start_time: "{{ start_time }}",
                 end_time: "{{ end_time }}"
