@@ -80,18 +80,25 @@
         border-radius: 5px;
         color: white;
         font-size: 1.1rem;
+        font-weight:bolder;
         cursor: pointer;
         transition: background-color 0.3s ease;
     }
 
-    .section button:hover {
-        background-color: #cdcdcd;
-        color: rgb(0, 0, 0);
+    .section:hover button:hover {
+        background-color: #ffa200;
+        color:#000000;
     }
 
     .section:hover {
-        filter: brightness(1.5);
         transform: scale(1.05);
+    }
+    .section:hover h1{
+        color:#ffa200;
+    }
+    .section:hover button{
+        background-color: #cdcdcd;
+        color: rgb(0, 0, 0);
     }
 
     /* Dim other sections when hovered */
@@ -140,7 +147,7 @@
     }
 
     footer a:hover {
-        text-decoration: underline;
+        color:#ffa200;
     }
 
     /* Media Queries for Responsive Layout */
