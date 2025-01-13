@@ -126,6 +126,14 @@ def insert_student(usn, student_name, department, batch, cgpa, date_of_birth, ph
     ''', (usn, student_name, department, batch, cgpa, date_of_birth, phone_number, email))
     conn.commit()
 
+def delete_attendance(session_id, usn):
+    # Prepare the SQL query to delete the record from Attendance table
+    cursor.execute('''DELETE FROM Attendance WHERE session_id = ? AND usn = ?''', (session_id, usn))
+    
+    # Commit the changes
+    conn.commit()
+    print(f"Attendance record for session_id {session_id} and usn {usn} deleted successfully!")
+
 """
 
 import sqlite3
@@ -167,10 +175,12 @@ conn.close()
 #insert_student("AI082", "Yashwith", "AIML", "2022", 9.0, "2001-01-01", "8876543211", "AI082@university.com")
 
 # Insert Attendance
-insert_attendance(1, "AI082", "Yashwith")
+#insert_attendance(1, "AI082", "Yashwith")
 
 # Commit changes and close the connection
-conn.commit()
+
+delete_attendance(13, "AI000")
+#conn.commit()
 conn.close()
 
 print("Data inserted successfully into college.db")

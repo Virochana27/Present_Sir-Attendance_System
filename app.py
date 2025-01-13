@@ -25,11 +25,11 @@ def faculty():
 
     if request.method == 'POST':
         # Retrieve form data
-        department = request.form.get('department')
+        department = request.form.get('department').upper()
         sem = request.form.get('sem')
-        section = request.form.get('section')
-        faculty_id = request.form.get('faculty_id')
-        subject_code = request.form.get('subject_code')
+        section = request.form.get('section').upper()
+        faculty_id = request.form.get('faculty_id').upper()
+        subject_code = request.form.get('subject_code').upper()
         room = request.form.get('room')
         date = datetime.now().strftime('%Y-%m-%d')
         start_time = request.form.get('start_time')
@@ -50,6 +50,7 @@ def faculty():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
                 (session_id, department, sem, section, faculty_id, subject_code, room, date, start_time, end_time))
             conn.commit()
+            
 
             # Generate timestamp for validation (as seconds since epoch)
             current_time = datetime.now()
@@ -80,7 +81,7 @@ def faculty():
                 room=room,
                 start_time=start_time,
                 end_time=end_time,
-                date=date
+                date=date,
             )
 
         except sqlite3.IntegrityError as e:
@@ -141,7 +142,7 @@ def student():
     if request.method == 'POST':
         data = request.form
         student_name = data.get("student_name")
-        usn = data.get("usn")
+        usn = data.get("usn").upper()
         qr_data = data.get("qr_data")
         current_time = datetime.now()
 

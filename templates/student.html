@@ -5,132 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Attendance</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        .message {
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #FFFFFF;
+            background: linear-gradient(to bottom right, #333333, #555555);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background:  #333333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+        .scanner-container {
+            position: relative;
+            width: 300px;
+            margin: 20px auto;
+            border: 2px solid #555;
             padding: 10px;
-            margin: 0px 0;
+            border-radius: 12px;
+            background: #1e1e1e;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+        }
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        #qr_data {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #444;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 90%;
+            max-width: 300px;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #444;
+            color: #fff;
+            font-size: 1rem;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .switch-btn {
+            background: linear-gradient(135deg, #ffa200,#ff6200);
+            color: rgb(255, 255, 255);
+        }
+        .scan-again-btn {
+            background: linear-gradient(135deg,#ffa200,#ff6200);
+            color: rgb(255, 255, 255);
+        }
+        button[type="submit"] {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .logo:hover {
+            color: #ffa200;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 1rem;
             border-radius: 5px;
             font-weight: bold;
         }
-
         .message.success {
             background-color: #4CAF50;
             color: white;
         }
-
         .message.error {
             background-color: #f44336;
             color: white;
         }
-
-        .scanner-container {
-            position: relative;
-            width: 300px;
-            margin: 0 auto;
-            border: 2px solid #ccc;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        video {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        #qr_data {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-
-        form {
-            margin-top: 20px;
-        }
-
-        input[type="text"] {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        button {
-            padding: 10px 20px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .switch-btn {
-            background-color: #007BFF;
-            margin-top: 15px;
-        }
-
-        .switch-btn:hover {
-            background-color: #0056b3;
-        }
-
-        .scan-again-btn {
-            background-color: #FFC107;
-            margin-top: 15px;
-        }
-
-        .scan-again-btn:hover {
-            background-color: #e0a800;
-        }
-
-        #switch-camera, .scanner-container {
-            display: none; /* Hide switch button and container when camera is off */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Scan QR Code to Mark Attendance</h1>
-
-    <div class="scanner-container">
-        <video id="video" autoplay></video>
-    </div>
-
-    <button class="switch-btn" id="switch-camera">Switch Camera</button>
-    <button class="scan-again-btn" id="scan-again" style="display: none;">Scan Again</button>
-
-    <br>
-    <input type="text" id="qr_data" placeholder="Scanned QR Code" readonly>
-
-    <br>
-    <form method="POST" action="/student">
-        <input type="text" id="student_name" name="student_name" placeholder="Enter your Name" required><br>
-        <input type="text" id="usn" name="usn" placeholder="Enter your USN" required><br>
-
-        <input type="hidden" name="qr_data" id="qr_data_hidden">
-
-        <button type="submit">Mark Attendance</button>
-    </form>
-    <br>
-    {% if message %}
-        <div class="message {{ message_type }}">
-            {{ message }}
+    <nav>
+        <div class="logo" onclick="location.href='/'">Present Sir</div>
+    </nav>
+    <div class="container">
+        <h1>Scan QR Code to Mark Attendance</h1>
+        <div class="scanner-container">
+            <video id="video" autoplay></video>
         </div>
-    {% endif %}
+        <button class="switch-btn" id="switch-camera">Switch Camera</button>
+        <button class="scan-again-btn" id="scan-again" style="display: none;">Scan Again</button>
+        <form method="POST" action="/student">
+            <input type="text" id="qr_data" placeholder="Session ID" readonly><br>
+            <input type="text" id="student_name" name="student_name" placeholder="Enter your Name" required><br>
+            <input type="text" id="usn" name="usn" placeholder="Enter your USN" required><br>
+            <input type="hidden" name="qr_data" id="qr_data_hidden">
+            <button type="submit">Mark Attendance</button>
+        </form>
+        {% if message %}
+            <div class="message {{ message_type }}">
+                {{ message }}
+            </div>
+        {% endif %}
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
         const video = document.getElementById('video');
@@ -206,8 +255,11 @@
             const code = jsQR(imageData.data, canvas.width, canvas.height);
 
             if (code) {
-                qrDataInput.value = code.data;
-                qrDataHidden.value = code.data;
+                const qrData = code.data;
+                const sessionId = qrData.split("|")[0];
+                qrDataInput.value = sessionId;
+                // Store the full QR code data in the hidden field for form submission
+                qrDataHidden.value = qrData;
 
                 // Stop the camera after scanning
                 currentStream.getTracks().forEach(track => track.stop());
@@ -251,5 +303,6 @@
 
         init();
     </script>
+
 </body>
 </html>

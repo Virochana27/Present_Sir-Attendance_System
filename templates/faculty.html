@@ -17,7 +17,7 @@
             font-family: 'Poppins', sans-serif;
             color: #FFFFFF;
             background: linear-gradient(to bottom right, #333333, #555555);
-            height: 110vh;
+            height: 115vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,7 +25,7 @@
         }
 
         .container {
-            height: 95vh;
+            height: 105vh;
             max-width: 600px;
             width: 100%;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
@@ -50,13 +50,15 @@
 
         .form-group label {
             font-weight: bold;
+            font-size: medium;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             border-radius: 5px;
             padding: 8px;
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
         }
 
@@ -171,7 +173,7 @@
 </head>
 <body>
     <nav>
-        <div class="logo" onclick="location.href='#'">Present Sir</div>
+        <div class="logo" onclick="location.href='/'">Present Sir</div>
     </nav>
     {% if message %}
                 <div class="alert" role="alert" id="error-message">
@@ -185,15 +187,39 @@
                 <form method="POST">
                     <div class="form-group">
                         <label for="department">Department:</label>
-                        <input type="text" name="department" id="department" required>
+                        <select name="department" id="department" required>
+                            <option value="" disabled selected>Select a Department</option>
+                            <option value="AIML">AIML</option>
+                            <option value="CSE">CSE</option>
+                            <option value="CSCF">CSCF</option>
+                            <option value="EC">ECE</option>
+                            <option value="MECH">ME</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="sem">Semester:</label>
-                        <input type="text" name="sem" id="sem" required>
+                        <select name="sem" id="sem" required>
+                            <option value="" disabled selected>Select a Semester</option>
+                            <option value=1>Semester 1</option>
+                            <option value=2>Semester 2</option>
+                            <option value=3>Semester 3</option>
+                            <option value=4>Semester 4</option>
+                            <option value=5>Semester 5</option>
+                            <option value=6>Semester 6</option>
+                            <option value=7>Semester 7</option>
+                            <option value=8>Semester 8</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="section">Section:</label>
-                        <input type="text" name="section" id="section" required>
+                        <select name="section" id="section" required>
+                            <option value="" disabled selected>Select a Section</option>
+                            <option value="A">Section A</option>
+                            <option value="B">Section B</option>
+                            <option value="C">Section C</option>
+                            <option value="D">Section D</option>
+                            <option value="E">Section E</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="faculty_id">Faculty ID:</label>
@@ -201,7 +227,14 @@
                     </div>
                     <div class="form-group">
                         <label for="subject_code">Subject Code:</label>
-                        <input type="text" name="subject_code" id="subject_code" required>
+                        <select name="subject_code" id="subject_code" required>
+                            <option value="" disabled selected>Select a Subject Code</option>
+                            <option value="22SAL061">22SAL061</option>
+                            <option value="22SAL062">22SAL062</option>
+                            <option value="22SAL063">22SAL063</option>
+                            <option value="22SAL643">22SAL643</option>
+                            <option value="22SAL651">22SAL651</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="room">Room Number:</label>
@@ -225,6 +258,7 @@
             <div class="col-md-6 col-12" id="qr-container" style="display:none;">
                 {% if qr_code %}
                 <div class="qr-container">
+                    <p id="session-id" style="font-weight: bold; font-size: 18px; color: #ffa200;">Session ID: {{ session_id }}</p>
                     <img id="qr-code-image" src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
                     <p id="countdown-timer" style="font-weight: bold; font-size: 18px; color: #fff;"></p>
                     <button onclick="stopQR()">Stop</button>
@@ -277,6 +311,7 @@
             .then(data => {
                 if (data.qr_code) {
                     document.getElementById('qr-code-image').src = `data:image/png;base64,${data.qr_code}`;
+                    document.getElementById('session-id').textContent = `Session ID: ${data.session_id}`;
                     resetCountdown();
                     document.getElementById('form-container').style.display = 'none';
                     document.getElementById('qr-container').style.display = 'block';
@@ -291,11 +326,7 @@
         }
 
         function stopQR() {
-            // Stop the QR code generation interval
-            clearInterval(intervalId);
-            clearInterval(countdownInterval); // Also stop the countdown timer
-            document.getElementById('form-container').style.display='block'
-            document.getElementById('qr-container').style.display = 'none';
+            window.location.href = '/faculty';
         }
 
         function startCountdown() {
