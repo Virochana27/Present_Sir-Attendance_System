@@ -4,6 +4,7 @@ import qrcode
 import io
 from datetime import datetime
 import base64
+import sqlite3
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
