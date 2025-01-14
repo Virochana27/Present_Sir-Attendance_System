@@ -5,7 +5,6 @@ import io
 from datetime import datetime
 import base64
 from supabase import create_client, Client
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
