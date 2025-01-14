@@ -1,0 +1,3 @@
+Flask==2.3.2              # Core framework
+qrcode==7.4.2             # For QR code generation
+pillow==10.0.0            # Required by qrcode for image handling
