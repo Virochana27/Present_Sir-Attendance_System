@@ -32,6 +32,15 @@
             background: #333333;
         }
 
+        form {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px; /* Spacing between elements */
+        width: 100%;
+        max-width: 800px;
+        margin: auto;
+    }
+
         .form-container {
             padding: 30px;
             border-radius: 8px;
@@ -151,6 +160,22 @@
             color: #ffa200;
         }
 
+        .span-1 {
+        grid-column:span 1;
+    }
+
+    .span-2 {
+        grid-column: span 2;
+    }
+
+    .span-3 {
+        grid-column: span 3;
+    }
+
+    #generate-button {
+        grid-column: span 3; /* Center the button across the form */
+    }
+
         @media (max-width: 768px) {
             .alert {
                 margin-left: 10%;
@@ -192,10 +217,11 @@
             <div class="col-md-6 col-12 form-container" id="form-container">
                 <h1>Generate QR Code for Attendance</h1>
                 <form method="POST">
-                    <div class="form-group">
+                    <!-- Line 1 -->
+                    <div class="form-group span-1">
                         <label for="department">Department:</label>
                         <select name="department" id="department" required>
-                            <option value="" disabled selected>Select a Department</option>
+                            <option value="" disabled selected>Department</option>
                             <option value="AIML">AIML</option>
                             <option value="CSE">CSE</option>
                             <option value="CSCF">CSCF</option>
@@ -203,39 +229,49 @@
                             <option value="MECH">ME</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group span-1">
                         <label for="sem">Semester:</label>
                         <select name="sem" id="sem" required>
-                            <option value="" disabled selected>Select a Semester</option>
-                            <option value=1>Semester 1</option>
-                            <option value=2>Semester 2</option>
-                            <option value=3>Semester 3</option>
-                            <option value=4>Semester 4</option>
-                            <option value=5>Semester 5</option>
-                            <option value=6>Semester 6</option>
-                            <option value=7>Semester 7</option>
-                            <option value=8>Semester 8</option>
+                            <option value="" disabled selected>Semester</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                
+                    <!-- Line 2 -->
+                    <div class="form-group span-1">
                         <label for="section">Section:</label>
                         <select name="section" id="section" required>
-                            <option value="" disabled selected>Select a Section</option>
-                            <option value="A">Section A</option>
-                            <option value="B">Section B</option>
-                            <option value="C">Section C</option>
-                            <option value="D">Section D</option>
-                            <option value="E">Section E</option>
+                            <option value="" disabled selected>Section</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group span-1">
                         <label for="faculty_id">Faculty ID:</label>
-                        <input type="text" name="faculty_id" id="faculty_id" required>
+                        <input type="text" name="faculty_id" id="faculty_id" placeholder="Faculty ID" oninput="fetchFacultyName()" required>
                     </div>
-                    <div class="form-group">
+                
+                    <!-- Line 3 -->
+                    <div class="form-group span-2">
+                        <label for="faculty_name">Faculty Name:</label>
+                        <input type="text" name="faculty_name" id="faculty_name" placeholder="Faculty Name" readonly>
+                    </div>
+                
+                    <!-- Line 4 -->
+                    <div class="form-group span-1">
                         <label for="subject_code">Subject Code:</label>
-                        <select name="subject_code" id="subject_code" required>
-                            <option value="" disabled selected>Select a Subject Code</option>
+                        <select name="subject_code" id="subject_code" oninput="fetchSubjectName()" required>
+                            <option value="" disabled selected>Subject Code</option>
                             <option value="22SAL061">22SAL061</option>
                             <option value="22SAL062">22SAL062</option>
                             <option value="22SAL063">22SAL063</option>
@@ -243,22 +279,57 @@
                             <option value="22SAL651">22SAL651</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="room">Room Number:</label>
-                        <input type="text" name="room" id="room" required>
+                    <!-- Line 5 -->
+                    <div class="form-group span-2">
+                        <label for="subject_name">Subject Name:</label>
+                        <input type="text" name="subject_name" id="subject_name" placeholder="Subject Name" readonly>
                     </div>
-                    <div class="form-group">
+
+                    <div class="form-group span-1">
+                        <label for="room">Lecture Room:</label>
+                        <input type="text" name="room" id="room" placeholder="Lecture Room" required>
+                    </div>
+                
+                    <div class="form-group span-2">
+                        <label for="session_id">Session ID:</label>
+                        <input type="text" name="session_id" id="session_id" placeholder="Session ID" readonly>
+                    </div>
+
+                    <!-- Line 6 -->
+                    <div class="form-group span-1">
                         <label for="date">Date:</label>
                         <input type="date" name="date" id="date" required readonly>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group span-1">
                         <label for="start_time">Start Time:</label>
-                        <input type="time" name="start_time" id="start_time" required>
+                        <select name="start_time" id="start_time" required>
+                            <option value="" disabled selected>Start Time</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:55">09:55</option>
+                            <option value="11:05">11:05</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:55">12:55</option>
+                            <option value="13:40">13:40</option>
+                            <option value="14:40">14:40</option>
+                            <option value="15:35">15:35</option>
+                        </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group span-1">
                         <label for="end_time">End Time:</label>
-                        <input type="time" name="end_time" id="end_time" required>
+                        <select name="end_time" id="end_time" required>
+                            <option value="" disabled selected>End Time</option>
+                            <option value="09:55">09:55</option>
+                            <option value="10:50">10:50</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:55">12:55</option>
+                            <option value="13:40">13:40</option>
+                            <option value="14:35">14:35</option>
+                            <option value="15:35">15:35</option>
+                            <option value="16:30">16:30</option>
+                        </select>
                     </div>
+                
+                    <!-- Line 7 -->
                     <button type="submit" id="generate-button">Generate</button>
                 </form>
             </div>
@@ -334,6 +405,63 @@
             window.location.href = '/faculty';
         }
 
+        function fetchFacultyName() {
+    const facultyId = document.getElementById('faculty_id').value;
+
+    if (facultyId) {
+        fetch('/get_faculty_name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ faculty_id: facultyId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('faculty_name').value = data.faculty_name || "Not Found";
+        })
+        .catch(err => console.error('Error fetching faculty name:', err));
+    } else {
+        document.getElementById('faculty_name').value = '';
+    }
+}
+
+function fetchSubjectName() {
+    const subjectCode = document.getElementById('subject_code').value;
+
+    if (subjectCode) {
+        fetch('/get_subject_name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ subject_code: subjectCode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('subject_name').value = data.subject_name || "Not Found";
+        })
+        .catch(err => console.error('Error fetching subject name:', err));
+    } else {
+        document.getElementById('subject_name').value = '';
+    }
+}
+
+function fetchSessionID() {
+    fetch('/get_session_id', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('session_id').value = data.session_id || "Not Found";
+        })
+        .catch(err => console.error('Error fetching faculty name:', err));
+    } 
+      
         function startCountdown() {
             let remainingTime = 30;
             document.getElementById('countdown-timer').textContent = `QR code resets in: ${remainingTime}s`;
@@ -353,6 +481,7 @@
         window.onload = () => {
             const dateInput = document.getElementById('date');
             const today = new Date();
+            fetchSessionID()
 
             // Convert the current date and time to IST
             const offsetIST = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds

@@ -13,6 +13,56 @@ app.secret_key = 'your_secret_key_here'  # Set your secret key for sessions
 def home():
     return render_template('home.html')
 
+def get_data_with_parameter_from_db(query, params):
+    try:
+        conn = sqlite3.connect('college.db')  # Connect to the SQLite database
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        result = cursor.fetchone()  # Fetch one record
+        return result[0] if result else "Unknown"  # Return the value if found, else "Unknown"
+    finally:
+        conn.close()  # Close the database connection
+
+def get_data_from_db(query):
+    try:
+        conn = sqlite3.connect('college.db')  # Connect to the SQLite database
+        cursor = conn.cursor()
+        cursor.execute(query)
+        result = cursor.fetchone()  # Fetch one record
+        return result[0] if result else "Unknown"  # Return the value if found, else "Unknown"
+    finally:
+         conn.close()  # Close the database connection
+# Endpoint to fetch faculty name
+@app.route('/get_faculty_name', methods=['POST'])
+def get_faculty_name():
+    faculty_id = request.json.get('faculty_id')
+    if not faculty_id:
+        return jsonify({"error": "Faculty ID is required"}), 400
+    
+    query = "SELECT faculty_name FROM Faculty WHERE faculty_id = ?"
+    faculty_name = get_data_with_parameter_from_db(query, (faculty_id.upper(),))
+    
+    return jsonify({"faculty_name": faculty_name})
+
+# Endpoint to fetch subject name
+@app.route('/get_subject_name', methods=['POST'])
+def get_subject_name():
+    subject_code = request.json.get('subject_code')
+    if not subject_code:
+        return jsonify({"error": "Subject Code is required"}), 400
+    
+    query = "SELECT subject_name FROM Subject WHERE subject_code = ?"
+    subject_name = get_data_with_parameter_from_db(query, (subject_code,))
+    
+    return jsonify({"subject_name": subject_name})
+
+@app.route('/get_session_id', methods=['POST'])
+def get_session_id():    
+    query = "SELECT MAX(session_id) FROM sessions"
+    last_session_id = get_data_from_db(query)
+    session_id = int(last_session_id) + 1 if last_session_id else 1
+    return jsonify({"session_id": session_id})
+
 # Faculty page to generate QR codes
 @app.route('/faculty', methods=['GET', 'POST'])
 def faculty():
