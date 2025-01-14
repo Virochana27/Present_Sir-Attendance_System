@@ -1,49 +1,44 @@
 import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import qrcode
-import sqlite3
 import io
 from datetime import datetime
 import base64
+from supabase import create_client, Client
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Set your secret key for sessions
+
+url = os.getenv('URL')
+key = os.getenv('KEY')
+supabase: Client = create_client(url, key)
+
 
 # Home route
 @app.route('/')
 def home():
     return render_template('home.html')
 
-def get_data_with_parameter_from_db(query, params):
-    try:
-        conn = sqlite3.connect('college.db')  # Connect to the SQLite database
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        result = cursor.fetchone()  # Fetch one record
-        return result[0] if result else "Unknown"  # Return the value if found, else "Unknown"
-    finally:
-        conn.close()  # Close the database connection
-
-def get_data_from_db(query):
-    try:
-        conn = sqlite3.connect('college.db')  # Connect to the SQLite database
-        cursor = conn.cursor()
-        cursor.execute(query)
-        result = cursor.fetchone()  # Fetch one record
-        return result[0] if result else "Unknown"  # Return the value if found, else "Unknown"
-    finally:
-         conn.close()  # Close the database connection
 # Endpoint to fetch faculty name
 @app.route('/get_faculty_name', methods=['POST'])
 def get_faculty_name():
     faculty_id = request.json.get('faculty_id')
     if not faculty_id:
         return jsonify({"error": "Faculty ID is required"}), 400
-    
-    query = "SELECT faculty_name FROM Faculty WHERE faculty_id = ?"
-    faculty_name = get_data_with_parameter_from_db(query, (faculty_id.upper(),))
-    
-    return jsonify({"faculty_name": faculty_name})
+    else:
+        try:
+        # Execute the query using Supabase
+            result = supabase.table('faculty').select('faculty_name').eq('faculty_id', faculty_id.upper()).execute()
+        # Return the faculty name if found, else "Unknown"
+            faculty_name=result.data[0]['faculty_name'] if result.data else "Unknown"
+            return jsonify({"faculty_name": faculty_name})
+        except Exception as e:
+            print(f"Error: {e}")
+            return "Unknown"
 
 # Endpoint to fetch subject name
 @app.route('/get_subject_name', methods=['POST'])
@@ -51,17 +46,26 @@ def get_subject_name():
     subject_code = request.json.get('subject_code')
     if not subject_code:
         return jsonify({"error": "Subject Code is required"}), 400
-    
-    query = "SELECT subject_name FROM Subject WHERE subject_code = ?"
-    subject_name = get_data_with_parameter_from_db(query, (subject_code,))
-    
-    return jsonify({"subject_name": subject_name})
+    else:
+        try:
+        # Execute the query using Supabase
+            result = supabase.table('subject').select('subject_name').eq('subject_code', subject_code.upper()).execute()
+        # Return the faculty name if found, else "Unknown"
+            subject_name=result.data[0]['subject_name'] if result.data else "Unknown"
+            return jsonify({"subject_name": subject_name})
+        except Exception as e:
+            print(f"Error: {e}")
+            return "Unknown"
 
 @app.route('/get_session_id', methods=['POST'])
 def get_session_id():    
-    query = "SELECT MAX(session_id) FROM sessions"
-    last_session_id = get_data_from_db(query)
-    session_id = int(last_session_id) + 1 if last_session_id else 1
+    response = supabase.table('sessions').select('session_id').order('session_id', desc=True).limit(1).execute()
+
+    if response.data:
+        last_session_id = response.data[0]['session_id']
+        session_id = int(last_session_id) + 1  # Increment session_id
+    else:
+        session_id = 1  # If no data is found, start from session_id = 1
     return jsonify({"session_id": session_id})
 
 # Faculty page to generate QR codes
@@ -87,22 +91,29 @@ def faculty():
         end_time = request.form.get('end_time')
 
         try:
-            # Connect to the database
-            conn = sqlite3.connect('college.db', check_same_thread=False, timeout=10)
-            c = conn.cursor()
+            # Fetch the last session_id from the sessions table
+            result = supabase.table('sessions').select('session_id').order('session_id', desc=True).limit(1).execute()
 
-            # Fetch the last session_id and increment it
-            c.execute('SELECT MAX(session_id) FROM sessions')
-            last_session_id = c.fetchone()[0]
-            session_id = int(last_session_id) + 1 if last_session_id else 1
-            # Insert session data into the Sessions table
-            c.execute('''
-                INSERT INTO sessions (session_id, department, sem, section, faculty_id, subject_code, room, date, start_time, end_time) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
-                (session_id, department, sem, section, faculty_id, subject_code, room, date, start_time, end_time))
-            conn.commit()
-            
-
+            last_session_id = result.data[0]['session_id'] if result.data else 0
+            session_id = last_session_id + 1
+        
+        # Insert session data into the sessions table
+            data = {
+                'session_id': session_id,
+                'department': department,
+                'sem': sem,
+                'section': section,
+                'faculty_id': faculty_id,
+                'subject_code': subject_code,
+                'room': room,
+                'date': date,
+                'start_time': start_time,
+                'end_time': end_time
+            }
+        
+            # Insert the data into the 'sessions' table
+            supabase.table('sessions').insert([data]).execute()
+        
             # Generate timestamp for validation (as seconds since epoch)
             current_time = datetime.now()
             timestamp_number = int(current_time.timestamp())
@@ -118,21 +129,17 @@ def faculty():
 
             # Encode the QR code image as a base64 string
             qr_code_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-            conn.close()  # Close the connection after use
+
+            #upload_to_supabase('college.db', 'Present Sir')
 
             return render_template(
                 'faculty.html',
                 qr_code=qr_code_base64,
             )
 
-        except sqlite3.IntegrityError as e:
-            conn.close()  # Close the connection if unique constraint error occurs
-            session['message'] = f"IntegrityError: {e}"  # Store error message in session
-            return redirect(url_for('faculty'))  # Redirect to the same page to display the message
         except Exception as e:
-            conn.close()  # Ensure connection is closed if any other error occurs
-            session['message'] = f"Error generating QR code or inserting data: {e}"  # Store error message in session
-            return redirect(url_for('faculty'))  # Redirect to the same page to display the message
+            session['message'] = f"Error: {e}"  # Handle errors
+            return redirect(url_for('faculty'))  # Redirect to handle the error
 
     return render_template('faculty.html', message=message)
 
@@ -140,11 +147,8 @@ def faculty():
 @app.route('/generate_qr', methods=['POST'])
 def generate_qr():
     try:
-        conn = sqlite3.connect('college.db', check_same_thread=False, timeout=10)
-        c = conn.cursor()
-        # Fetch the last session_id and increment it
-        c.execute('SELECT MAX(session_id) FROM sessions')
-        last_session_id = c.fetchone()[0]
+        result = supabase.table('sessions').select('session_id').order('session_id', desc=True).limit(1).execute()
+        last_session_id = result.data[0]['session_id'] if result.data else 1
         session_id = int(last_session_id) if last_session_id else 1
         # Retrieve form data from the request
         # Generate a new timestamp
@@ -210,36 +214,34 @@ def student():
                 session['message_type'] = message_type
                 return redirect(url_for('student'))
 
-            # Mark attendance in the database
-            conn = sqlite3.connect('college.db')
-            cursor = conn.cursor()
-            cursor.execute(''' 
-                INSERT INTO attendance (session_id, usn, student_name) 
-                VALUES (?, ?, ?) 
-            ''', (session_id, usn, student_name))
-            conn.commit()
-            conn.close()
-
-            message = "Attendance marked successfully!"
+            attendance_data = {
+                "session_id": session_id,
+                "usn": usn,
+                "student_name": student_name
+            }
+            supabase.table('attendance').insert([attendance_data]).execute()
+            message = f"Attendance Marked Successfully!"
             message_type = 'success'
             session['message'] = message
             session['message_type'] = message_type
             return redirect(url_for('student'))
-
-        except sqlite3.IntegrityError as e:
-            conn.close()  # Close the connection if unique constraint error occurs
-            message = "Attendance already marked for this session."
-            message_type = 'error'
-            session['message'] = message
-            session['message_type'] = message_type
-            return redirect(url_for('student'))
         except Exception as e:
-            conn.close()  # Ensure connection is closed if any other error occurs
-            message = f"Invalid QR data or other error: {str(e)}"
-            message_type = 'error'
-            session['message'] = message
-            session['message_type'] = message_type
-            return redirect(url_for('student'))
+            print(str(e))
+            if 'code' in str(e):
+                error_code = str(e).split("code': ")[1].split(",")[0]
+                print(error_code)
+            if error_code=='23505':
+                message = "Attendance already marked for this session."
+                message_type = 'error'
+                session['message'] = message
+                session['message_type'] = message_type
+                return redirect(url_for('student'))
+            else:
+                message = f"Error: {str(e)}"
+                message_type = 'error'
+                session['message'] = message
+                session['message_type'] = message_type
+                return redirect(url_for('student'))
 
     return render_template('student.html', message=message, message_type=message_type)
 
