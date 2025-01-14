@@ -1,6 +1,7 @@
-Flask==2.2.3
 qrcode==7.3.1
 python-dotenv==1.0.0
 supabase==0.2.0
 pillow==10.0.0       
 gunicorn
+flask==2.1.0
+werkzeug==2.1.0
