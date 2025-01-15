@@ -273,10 +273,10 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('faculty_id', None)  # Remove faculty_id from the session
-    return redirect(url_for('login'))  # Redirect to the login page
+    return redirect(url_for('home'))  # Redirect to the login page
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  # Use PORT from the environment or default to 5000
-    app.run(host="0.0.0.0", port=port)  #
+    app.run(host="0.0.0.0", port=port) 
     #app.run(debug=True)

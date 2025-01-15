@@ -149,6 +149,13 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
+        .logout{
+            cursor: pointer;s
+        }
+        .logout:hover{
+            color: #ffa200;
+        }
+
         .logo {
         font-size: 1.5rem;
         font-weight: 700;
@@ -210,7 +217,7 @@
 <body>
     <nav>
         <div class="logo" onclick="location.href='/'">Present Sir</div>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        <div class="logout" onclick=location.href="{{ url_for('logout') }}">Logout</div>
     </nav>
     {% if message %}
                 <div class="alert" role="alert" id="error-message">
