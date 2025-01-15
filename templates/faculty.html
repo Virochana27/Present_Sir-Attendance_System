@@ -210,6 +210,7 @@
 <body>
     <nav>
         <div class="logo" onclick="location.href='/'">Present Sir</div>
+        <a href="{{ url_for('logout') }}">Logout</a>
     </nav>
     {% if message %}
                 <div class="alert" role="alert" id="error-message">
@@ -262,13 +263,13 @@
                     </div>
                     <div class="form-group span-1">
                         <label for="faculty_id">Faculty ID:</label>
-                        <input type="text" name="faculty_id" id="faculty_id" placeholder="Faculty ID" oninput="fetchFacultyName()" required>
+                        <input type="text" name="faculty_id" id="faculty_id" placeholder="Faculty ID" required readonly>
                     </div>
                 
                     <!-- Line 3 -->
                     <div class="form-group span-2">
                         <label for="faculty_name">Faculty Name:</label>
-                        <input type="text" name="faculty_name" id="faculty_name" placeholder="Faculty Name" readonly>
+                        <input type="text" name="faculty_name" id="faculty_name" placeholder="Faculty Name" rerequired readonly>
                     </div>
                 
                     <!-- Line 4 -->
@@ -409,26 +410,6 @@
             window.location.href = '/faculty';
         }
 
-        function fetchFacultyName() {
-    const facultyId = document.getElementById('faculty_id').value;
-
-    if (facultyId) {
-        fetch('/get_faculty_name', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ faculty_id: facultyId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('faculty_name').value = data.faculty_name || "Not Found";
-        })
-        .catch(err => console.error('Error fetching faculty name:', err));
-    } else {
-        document.getElementById('faculty_name').value = '';
-    }
-}
 
 function fetchSubjectName() {
     const subjectCode = document.getElementById('subject_code').value;
@@ -456,12 +437,13 @@ function fetchSessionID() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
+            }
         })
         .then(response => response.json())
         .then(data => {
             document.getElementById('session_id').value = data.session_id || "Not Found";
+            document.getElementById('faculty_id').value = data.faculty_id || "Not Found";
+            document.getElementById('faculty_name').value = data.faculty_name || "Not Found";
         })
         .catch(err => console.error('Error fetching faculty name:', err));
     } 

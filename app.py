@@ -7,6 +7,7 @@ import base64
 import sqlite3
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
@@ -22,23 +23,6 @@ supabase: Client = create_client(url, key)
 @app.route('/')
 def home():
     return render_template('home.html')
-
-# Endpoint to fetch faculty name
-@app.route('/get_faculty_name', methods=['POST'])
-def get_faculty_name():
-    faculty_id = request.json.get('faculty_id')
-    if not faculty_id:
-        return jsonify({"error": "Faculty ID is required"}), 400
-    else:
-        try:
-        # Execute the query using Supabase
-            result = supabase.table('faculty').select('faculty_name').eq('faculty_id', faculty_id.upper()).execute()
-        # Return the faculty name if found, else "Unknown"
-            faculty_name=result.data[0]['faculty_name'] if result.data else "Unknown"
-            return jsonify({"faculty_name": faculty_name})
-        except Exception as e:
-            print(f"Error: {e}")
-            return "Unknown"
 
 # Endpoint to fetch subject name
 @app.route('/get_subject_name', methods=['POST'])
@@ -66,11 +50,27 @@ def get_session_id():
         session_id = int(last_session_id) + 1  # Increment session_id
     else:
         session_id = 1  # If no data is found, start from session_id = 1
-    return jsonify({"session_id": session_id})
+
+    if 'faculty_id' in session:
+        faculty_id = session['faculty_id']
+        try:
+    # Execute the query using Supabase
+            result = supabase.table('faculty').select('faculty_name').eq('faculty_id', faculty_id.upper()).execute()
+        # Return the faculty name if found, else "Unknown"
+            faculty_name=result.data[0]['faculty_name'] if result.data else "Unknown"
+        except Exception as e:
+            print(f"Error: {e}")
+            return "Unknown"
+
+    return jsonify({"session_id": session_id, "faculty_id": faculty_id, "faculty_name": faculty_name})
 
 # Faculty page to generate QR codes
 @app.route('/faculty', methods=['GET', 'POST'])
 def faculty():
+    if 'faculty_id' not in session:  # Check if the user is logged in
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
+    faculty_id = session['faculty_id']  # Retrieve the logged-in faculty ID
     message = None  # Initialize message variable
 
     # Retrieve the message from the session if it exists
@@ -245,6 +245,38 @@ def student():
 
     return render_template('student.html', message=message, message_type=message_type)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    message = None
+    if request.method == 'POST':
+        faculty_id = request.form.get('faculty_id').upper()
+        password = request.form.get('password')
+
+        try:
+            # Fetch faculty details from the database
+            result = supabase.table('faculty_credentials').select('password').eq('faculty_id', faculty_id).execute()
+            if result.data:
+                stored_password = result.data[0]['password']
+                # Verify the password
+                if check_password_hash(stored_password, password):
+                    session['faculty_id'] = faculty_id  # Set the faculty ID in the session
+                    return redirect(url_for('faculty'))  # Redirect to the faculty page
+                else:
+                    message = "Invalid password. Please try again."
+            else:
+                message = "Faculty ID not found."
+        except Exception as e:
+            message = f"Error: {e}"
+
+    return render_template('login.html', message=message)
+
+@app.route('/logout')
+def logout():
+    session.pop('faculty_id', None)  # Remove faculty_id from the session
+    return redirect(url_for('login'))  # Redirect to the login page
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  # Use PORT from the environment or default to 5000
-    app.run(host="0.0.0.0", port=port)  #app.run(debug=True)
+    app.run(host="0.0.0.0", port=port)  #
+    #app.run(debug=True)

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #FFFFFF;
+            background: linear-gradient(to bottom right, #333333, #555555);
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .logo:hover {
+            color: #ffa200;
+        }
+
+        /* Login Form Section */
+        .login-section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            background: #444444;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffa200;
+        }
+
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .login-container form label {
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .login-container form input {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .login-container form button {
+            padding: 12px;
+            background-color: #ffa200;
+            border: none;
+            border-radius: 5px;
+            color: #000000;
+            font-size: 1.1rem;
+            font-weight: bolder;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-container form button:hover {
+            background-color: #cdcdcd;
+            color: #000000;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        footer {
+            position: absolute;
+            bottom: 1px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        footer a {
+            color: #F1F1F1;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #ffa200;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .login-container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .login-container h2 {
+                font-size: 1.8rem;
+            }
+
+            .login-container form label {
+                font-size: 0.9rem;
+            }
+
+            .login-container form input,
+            .login-container form button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo" onclick="location.href='/'">Present Sir</div>
+    </nav>
+
+    <!-- Login Form Section -->
+    <div class="login-section">
+        <div class="login-container">
+            <h2>Faculty Login</h2>
+            <br>
+            <form method="POST">
+                <label for="faculty_id">Faculty ID:</label>
+                <input type="text" name="faculty_id" id="faculty_id" placeholder="Enter your Faculty ID" required>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" placeholder="Enter your Password" required>
+                <br>
+                {% if message %}
+                <p class="error-message">{{ message }}</p>
+            {% endif %}
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
