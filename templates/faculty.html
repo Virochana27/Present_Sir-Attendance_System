@@ -472,15 +472,11 @@ function fetchSessionID() {
         }
 
         window.onload = () => {
+            fetchSessionID()
             const dateInput = document.getElementById('date');
             const today = new Date();
-            fetchSessionID()
-
-            // Convert the current date and time to IST
-            const offsetIST = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-            const ISTDate = new Date(today.getTime() + offsetIST);
-            // Format the IST date as YYYY-MM-DD
-            const formattedDate = ISTDate.toISOString().split('T')[0];
+            // Format the date as YYYY-MM-DD
+            const formattedDate = today.toISOString().split('T')[0];
             dateInput.value = formattedDate;
 
 
