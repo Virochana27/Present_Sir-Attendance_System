@@ -245,6 +245,107 @@ def student():
 
     return render_template('student.html', message=message, message_type=message_type)
 
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    '''if 'faculty_id' not in session or session['faculty_id'] != 'ADMIN':  # Ensure only admin can access this page
+        return redirect(url_for('login'))  # Redirect to login if not logged in as admin'''
+
+    message = None  # Initialize message for feedback
+    action = request.form.get('action', '')  # Determine action type (create, update, delete)
+
+    # Fetch existing data
+    students = supabase.table('student').select('*').execute().data
+    faculty = supabase.table('faculty').select('*').execute().data
+
+    if request.method == 'POST':
+        try:
+            if action == 'create_student':
+                # Create new student record
+                student_data = {
+                    "usn": request.form['usn'].upper(),
+                    "student_name": request.form['student_name'],
+                    "department": request.form['department'].upper(),
+                    "batch": request.form['batch'],
+                    "cgpa": request.form['cgpa'],
+                    "date_of_birth": request.form['date_of_birth'],
+                    "phone_number": request.form['phone_number'],
+                    "email": request.form['email'],
+                }
+                supabase.table('student').insert([student_data]).execute()
+                message = "Student record created successfully."
+
+            elif action == 'update_student':
+                # Update existing student record
+                usn = request.form['usn'].upper()
+                updated_data = {
+                    "student_name": request.form['student_name'],
+                    "department": request.form['department'].upper(),
+                    "batch": request.form['batch'],
+                    "cgpa": request.form['cgpa'],
+                    "date_of_birth": request.form['date_of_birth'],
+                    "phone_number": request.form['phone_number'],
+                    "email": request.form['email'],
+                }
+                supabase.table('student').update(updated_data).eq('usn', usn).execute()
+                message = "Student record updated successfully."
+
+            elif action == 'delete_student':
+                # Delete student record
+                usn = request.form['usn'].upper()
+                supabase.table('student').delete().eq('usn', usn).execute()
+                message = "Student record deleted successfully."
+
+            elif action == 'create_faculty':
+                # Create new faculty record
+                faculty_data = {
+                    "faculty_id": request.form['faculty_id'].upper(),
+                    "faculty_name": request.form['faculty_name'],
+                    "department": request.form['department'].upper(),
+                    "position": request.form['position'],
+                    "date_of_appointment": request.form['date_of_appointment'],
+                    "date_of_birth": request.form['date_of_birth'],
+                    "email": request.form['email'],
+                    "phone_number": request.form['phone_number'],
+                }
+                supabase.table('faculty').insert([faculty_data]).execute()
+                # Hash the password and store in credentials table
+                hashed_password = generate_password_hash(request.form['password'])
+                credentials_data = {
+                    "faculty_id": request.form['faculty_id'].upper(),
+                    "email": request.form['email'],
+                    "password": hashed_password,
+                }
+                supabase.table('faculty_credentials').insert([credentials_data]).execute()
+                message = "Faculty record created successfully."
+
+            elif action == 'update_faculty':
+                # Update existing faculty record
+                faculty_id = request.form['faculty_id'].upper()
+                updated_data = {
+                    "faculty_name": request.form['faculty_name'],
+                    "department": request.form['department'].upper(),
+                    "position": request.form['position'],
+                    "date_of_appointment": request.form['date_of_appointment'],
+                    "date_of_birth": request.form['date_of_birth'],
+                    "email": request.form['email'],
+                    "phone_number": request.form['phone_number'],
+                }
+                supabase.table('faculty').update(updated_data).eq('faculty_id', faculty_id).execute()
+                message = "Faculty record updated successfully."
+
+            elif action == 'delete_faculty':
+                # Delete faculty record
+                faculty_id = request.form['faculty_id'].upper()
+                supabase.table('faculty').delete().eq('faculty_id', faculty_id).execute()
+                supabase.table('faculty_credentials').delete().eq('faculty_id', faculty_id).execute()
+                message = "Faculty record deleted successfully."
+
+        except Exception as e:
+            message = f"Error: {e}"
+
+    return render_template('admin.html', message=message, students=students, faculty=faculty)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     message = None
