@@ -34,6 +34,10 @@
         <input type="text" name="date_of_birth" placeholder="DOB" required>
         <input type="text" name="phone_number" placeholder="Phone No." required>
         <input type="text" name="email" placeholder="Email" required>
+        <video id="video" autoplay playsinline style="width: 500px; height: 500px;"></video>
+        <button id="capture">Capture Face</button>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <input type="text" id="faceEncoding" name="face_encoding" readonly required>
         <button type="submit">Create</button>
     </form>
 
@@ -157,5 +161,52 @@
             {% endfor %}
         </tbody>
     </table>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const faceEncodingInput = document.getElementById('faceEncoding');
+        const captureButton = document.getElementById('capture');
+
+        // Access the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error("Error accessing the camera: ", error);
+            });
+
+        // Capture the frame when the button is clicked
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert the captured frame to Base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // Send the image to the Flask backend
+            fetch('/process_frame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: imageData }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        faceEncodingInput.value = data.face_encoding; // Set the face encoding in the hidden input
+                        alert("Face captured successfully!");
+                    } else {
+                        alert("Failed to process the face. Please try again.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error processing the face: ", error);
+                });
+        });
+    </script>
 </body>
 </html>

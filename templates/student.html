@@ -196,6 +196,7 @@
         </div>
         <button class="switch-btn" id="switch-camera">Switch Camera</button>
         <button class="scan-again-btn" id="scan-again" style="display: none;">Scan Again</button>
+        <button class="capture-btn" id="capture-face">Capture Face</button>
         <form method="POST" action="/student">
             <input type="text" id="qr_data" placeholder="Session ID" readonly><br>
             <input type="text" id="student_name" name="student_name" placeholder="Enter your Name" required><br>
@@ -212,6 +213,8 @@
         const switchCameraButton = document.getElementById('switch-camera');
         const scanAgainButton = document.getElementById('scan-again');
         const scannerContainer = document.querySelector('.scanner-container');
+        const student_name = document.getElementById('student_name');
+        const usn = document.getElementById('usn');
 
         let currentStream = null;
         let currentCameraIndex = 0;
@@ -313,6 +316,55 @@
             setInterval(scanQRCode, 100);
         }
         
+// Capture face and send it to Flask for matching
+async function captureFace() {
+    try {
+        if (!currentStream) {
+            throw new Error("Camera stream not started.");
+        }
+
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+
+        // Capture the current frame from the video
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert the captured frame to a Base64 image
+        const Image = canvas.toDataURL("image/png");
+
+        // Send the captured image to the Flask server
+        const response = await fetch('/match_face', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ Image: Image }) // Send raw image
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            student_name.value = result.student_name;
+            usn.value=result.usn;
+            alert("Face matched successfully!");
+            
+        } else {
+            alert("Face match failed. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error capturing face or sending to server:", error);
+        alert("An error occurred while capturing the face. Please try again.");
+    }
+}
+
+
+// Add an event listener for the capture button
+const captureButton = document.getElementById('capture-face');
+captureButton.addEventListener('click', captureFace);
+
 
 
         // Start scanning again

@@ -25,7 +25,10 @@ debugpy
 decorator
 defusedxml
 deprecation
+dlib
 executing
+face-recognition
+face_recognition_models
 fastjsonschema
 filelock
 Flask
@@ -80,6 +83,8 @@ nest-asyncio
 networkx
 notebook_shim
 numpy
+opencv-python
+opencv-python-headless
 overrides
 packaging
 pandas
@@ -133,6 +138,7 @@ tenacity
 terminado
 threadpoolctl
 tinycss2
+torch
 tornado
 traitlets
 types-python-dateutil

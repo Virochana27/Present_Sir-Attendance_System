@@ -4,10 +4,15 @@ import qrcode
 import io
 from datetime import datetime
 import base64
-import sqlite3
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
+import numpy as np
+import cv2
+import face_recognition
+import traceback
+from PIL import Image
+
 
 load_dotenv()
 
@@ -41,6 +46,71 @@ def get_subject_name():
             print(f"Error: {e}")
             return "Unknown"
 
+@app.route('/match_face', methods=['POST'])
+def match_face():
+    try:
+        data = request.get_json()
+        image_data = data['Image'].split(',')[1]
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # Convert image to RGB
+        rgb_image = image.convert("RGB")
+        np_image = face_recognition.load_image_file(io.BytesIO(image_bytes))
+
+        face_locations = face_recognition.face_locations(np_image)
+        if face_locations:
+            face_encodings = face_recognition.face_encodings(np_image, face_locations)
+
+        input_encoding = face_encodings[0]  # Assume one face per image
+
+        # Fetch stored face encodings
+        stored_data = fetch_stored_encodings()
+
+        if not stored_data:
+            return jsonify({"success": False, "error": "No stored encodings found"}), 404
+
+        # Compare the input encoding with stored encodings
+        for student in stored_data:
+            try:
+                stored_encoding = student['face_encoding']
+
+                # Convert the stored encoding from string to numpy array
+                stored_encoding = np.fromstring(stored_encoding, sep=',')
+
+                # Compare face encodings
+                matches = face_recognition.compare_faces([stored_encoding], input_encoding)
+
+                if True in matches:
+                    # Match found, return student details
+                    return jsonify({
+                        "success": True,
+                        "student_name": student['student_name'],
+                        "usn": student['usn']
+                    })
+            except Exception as e:
+                traceback.print_exc()
+                # Log and skip any corrupted encodings
+                print(f"Error processing student {student}: {e}")
+                continue
+
+        # If no match is found
+        return jsonify({"success": False, "error": "No matching face found"}), 404
+
+    except Exception as e:
+        traceback.print_exc()
+        # Catch all other errors
+        return jsonify({"success": False, "error": f"Internal Server Error: {str(e)}"}), 500
+
+def fetch_stored_encodings():
+    try:
+        # Fetch data from Supabase
+        response = supabase.table('student').select('face_encoding', 'student_name', 'usn').execute()
+        return response.data
+    except Exception as e:
+        print(f"Error fetching data from Supabase: {e}")
+        return None
+
 @app.route('/get_session_id', methods=['POST'])
 def get_session_id():    
     response = supabase.table('sessions').select('session_id').order('session_id', desc=True).limit(1).execute()
@@ -63,6 +133,36 @@ def get_session_id():
             return "Unknown"
 
     return jsonify({"session_id": session_id, "faculty_id": faculty_id, "faculty_name": faculty_name})
+
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    try:
+        data = request.get_json()
+        image_data = data['image'].split(',')[1]
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+
+        # Convert image to RGB
+        rgb_image = image.convert("RGB")
+        np_image = face_recognition.load_image_file(io.BytesIO(image_bytes))
+
+        face_locations = face_recognition.face_locations(np_image)
+        if face_locations:
+            face_encodings = face_recognition.face_encodings(np_image, face_locations)
+
+            if len(face_encodings) == 0:
+                return jsonify({"success": False, "error": "No faces detected"}), 400
+
+            # Convert NumPy array to list for JSON serialization
+            face_encodings_list = [encoding.tolist() for encoding in face_encodings]
+
+            return jsonify(success=True, face_encoding=face_encodings_list)
+        else:
+            return jsonify({"success": False, "error": "No faces detected"}), 400
+
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Internal Server Error: {str(e)}"}), 500
+
 
 # Faculty page to generate QR codes
 @app.route('/faculty', methods=['GET', 'POST'])
@@ -270,6 +370,7 @@ def admin():
                     "date_of_birth": request.form['date_of_birth'],
                     "phone_number": request.form['phone_number'],
                     "email": request.form['email'],
+                    "face_encoding":request.form['face_encoding'],
                 }
                 supabase.table('student').insert([student_data]).execute()
                 message = "Student record created successfully."
