@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install system dependencies for dlib and other packages
 RUN apt-get update && apt-get install -y \
     build-essential cmake pkg-config \
-    python3 python3-pip python3-dev \
+    python3.10 python3.10-dev python3.10-venv &&
     libjpeg-dev libpng-dev libtiff-dev \
     libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libx264-dev \
     libblas-dev liblapack-dev gfortran libatlas-base-dev \
