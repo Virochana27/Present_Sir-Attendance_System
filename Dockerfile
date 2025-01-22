@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev libxslt-dev \
     nodejs npm texlive-xetex && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+    pip install dlib face-recognition
 
 
 # Set working directory to root directory
